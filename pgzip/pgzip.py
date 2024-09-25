@@ -26,7 +26,8 @@ from gzip import (
     write32u,
 )
 
-__version__ = "0.3.5"
+
+__version__ = "0.3.6"
 
 SID = b"IG"  # Subfield ID of indexed gzip file
 
@@ -718,7 +719,7 @@ class _MulitGzipReader(_GzipReader):
             buf = self._fp.read(io.DEFAULT_BUFFER_SIZE)
 
             uncompress = self._decompressor.decompress(buf, size)
-            if self._decompressor.unconsumed_tail != b"":
+            if getattr(self._decompressor, "unconsumed_tail", b"") != b"":
                 self._fp.prepend(self._decompressor.unconsumed_tail)
             elif self._decompressor.unused_data != b"":
                 # Prepend the already read bytes to the fileobj so they can
@@ -758,3 +759,12 @@ class _MulitGzipReader(_GzipReader):
 
     def clear_block_iter(self):
         self.block_start_iter = None
+
+
+# Python 3.12 inlines `_add_read_data`, so we define it here if it is not already defined.
+if not hasattr(_MulitGzipReader, "_add_read_data"):
+    def _add_read_data(self, data):
+        self._crc = zlib.crc32(data, self._crc)
+        self._stream_size += len(data)
+
+    _MulitGzipReader._add_read_data = _add_read_data
