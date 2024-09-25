@@ -265,7 +265,7 @@ class PgzipFile(GzipFile):
             )
         else:
             crc = zlib.crc32(data)
-            return (b"", body_bytes, rest_bytes, crc, data.nbytes)
+            return b"", body_bytes, rest_bytes, crc, data.nbytes
 
     def write(self, data):
         self._check_not_closed()
@@ -560,14 +560,14 @@ class _MulitGzipReader(_GzipReader):
             rcrc: raw crc32 in compressed file
         """
         dpr = zlib.decompressobj(wbits=-zlib.MAX_WBITS)
-        ## FIXME: case when raw data size > 4 GB, rsize is just the mod of 4G
-        ## not a good idea to read all of them in memory
+        # FIXME: case when raw data size > 4 GB, rsize is just the mod of 4G
+        #        not a good idea to read all of them in memory
         body_bytes = dpr.decompress(data, rsize)
         crc = zlib.crc32(body_bytes)
         if dpr.unconsumed_tail != b"":
             body_bytes += dpr.unconsumed_tail
             crc = zlib.crc32(dpr.unconsumed_tail, crc)
-        return (body_bytes, rsize, crc, rcrc)
+        return body_bytes, rsize, crc, rcrc
 
     def _decompress_async(self, data, rcrc, rsize):
         self._read_pool.append(
@@ -700,7 +700,7 @@ class _MulitGzipReader(_GzipReader):
                         )
                     )
                 self._block_buff = (
-                    self._block_buff[self._block_buff_pos :] + block_read_rlt[0]
+                    self._block_buff[self._block_buff_pos:] + block_read_rlt[0]
                 )
                 self._block_buff_size = len(self._block_buff)
                 self._block_buff_pos = min(size, self._block_buff_size)
@@ -752,7 +752,7 @@ class _MulitGzipReader(_GzipReader):
             c = self._fp.read(1)
         if c:
             self._fp.prepend(c)
-        return (crc32, isize)
+        return crc32, isize
 
     def set_block_iter(self, block_start_list):
         self.block_start_iter = iter(block_start_list)
