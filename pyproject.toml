@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 license={text = "MIT License"}
 name = 'pgzip'
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 description = 'A multi-threading implementation of Python gzip module'
 readme = "README.rst"
 authors = [{ name = 'Vincent Li', email = 'vincentliyx@gmail.com' }]
